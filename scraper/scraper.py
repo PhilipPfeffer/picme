@@ -6,15 +6,19 @@ import re
 import random
 
 ALERT_CLASS_NAME="mt3GC" ## TODO - config file to store all these constants
-POST_OBJECT_CLASS_NAME="_8Rm4L M9sTE  L_LMM SgTZ1   ePUX4"
+POST_OBJECT_CLASS_NAME="_8Rm4L M9sTE  L_LMM SgTZ1   ePUX4 "
 USERNAME_CLASS_NAME="FPmhX notranslate nJAzx"
+
+
 class Scraper:
     def __init__(self): 
         self.driver = webdriver.Chrome()
         self.supportedImgFileTypes = ["image/jpeg"]
         ## hardcoding cookies for now
         self.cookies = [{"name": "sessionid", "value": "23063648597%3AIsOfSAvrrcF6ww%3A4"}]
-        return
+    
+    def getDriver(self):
+        return self.driver
 
     def connectToWebsite(self, url): #, cookies): TODO NOT WORKING CONSISTENTLY
         self.url = url
@@ -45,7 +49,7 @@ class Scraper:
             print(e)
             return None
 
-    def getImagesSaveLocally(self, post): ##  UNSTABLE
+    def getImageBytes(self, post): ##  UNSTABLE
         try:
             # get img data
             imgHtml = post.find_element_by_class_name("FFVAD")
@@ -56,7 +60,7 @@ class Scraper:
             if (r.headers["Content-Type"] not in self.supportedImgFileTypes): return
             name = "img"+str(random.randint(0,1000))+".jpg"
             open(name, "wb").write(r.content)
-            return r.content
+            return (r.content, imgUrl)
         except Exception as e:
             print(e)
             return []
@@ -72,6 +76,9 @@ class Scraper:
             print(e)
             return []
 
+    def closeScraper(self):
+        self.driver.close()
+
 class Post():
     def __init__(self):
         return
@@ -85,7 +92,7 @@ class Post():
     def getUsername(self):
         raise NotImplementedError 
 
-    def setUsername(self, un)
+    def setUsername(self, un):
         raise NotImplementedError
 
     def getLikeCount(self):
@@ -98,4 +105,18 @@ class Post():
 if __name__  == "__main__":
     instaUrl = "https://www.instagram.com"
     scraper = Scraper()
+    scraper.connectToWebsite(instaUrl)
+    scraper.connectToWebsite(instaUrl)
+    scraper.dismissInstagramNotificationAlert()
+    postsInScreen = scraper.getAllPostsInScreen();
+    formattedPosts = []
+    for post in postsInScreen:
+        dictPost = {}
+        dictPost["image"], dictPost["imageUrl"] = scraper.getImageBytes(post)
+        dictPost["username"] = scraper.getUsernameFromPost(post).text
+        formattedPosts.append(dictPost)
+    for p in formattedPosts:
+        print("post: ", dictPost["imageUrl"], dictPost["username"])
+    scraper.closeScraper()
+
     
