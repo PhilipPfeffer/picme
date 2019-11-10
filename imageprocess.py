@@ -7,7 +7,8 @@ import numpy as np
 def dostuff():
     imageData = imageProcess('./', 'testimage.jpg')
     averagePixs = averageColour(imageData[0], imageData[1])
-    saveNewImage('newImage.jpg', averagePixs, imageData[1])
+    # saveNewImage('averageImage.jpg', averagePixs, imageData[1]) # avg image
+    
 
 
 # Takes image location, returns (image ndarray, array shape)
