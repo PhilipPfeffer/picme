@@ -43,8 +43,41 @@ class Image:
         return (rTotal/numPix, gTotal/numPix, bTotal/numPix)
 
     def sectorColours(self, numSectorsX, numSectorsY):
-        """Returns an imageArray with the """
-        self.imageArray + self.imageShape
+        """Returns an imageArray with each sector's colour averaged out."""
+        sectorArray = np.zeros(self.imageShape, dtype = np.uint8)
+        
+        sectorWidth = self.imageShape[0]//numSectorsX
+        sectorHeight = self.imageShape[1]//numSectorsY
+        numSectors = numSectorsX*numSectorsY
+        for n in range(numSectors):
+            print(f"Sector {n+1}/{numSectors}")
+            sectorR = 0
+            sectorG = 0
+            sectorB = 0
+            for x in range((n%numSectorsY) * sectorWidth, (n%numSectorsY + 1) * sectorWidth):
+                for y in range((n//numSectorsX) * sectorHeight, (n//numSectorsX + 1) * sectorHeight):
+                    sectorR += self.imageArray[x][y][0]
+                    sectorG += self.imageArray[x][y][1]
+                    sectorB += self.imageArray[x][y][2]
+            
+            sectorR /= (sectorWidth*sectorHeight)
+            sectorG /= (sectorWidth*sectorHeight)
+            sectorB /= (sectorWidth*sectorHeight)
+            for x in range((n%numSectorsY) * sectorWidth, (n%numSectorsY + 1) * sectorWidth):
+                for y in range((n//numSectorsX) * sectorHeight, (n//numSectorsX + 1) * sectorHeight):
+                    sectorArray[x][y][0] = sectorR
+                    sectorArray[x][y][1] = sectorG
+                    sectorArray[x][y][2] = sectorB
+        
+        return sectorArray
+
+
+        # newImageArray = np.zeros(self.imageShape, dtype = np.uint8)
+        # for x in range(self.imageShape[0]):
+        #     for y in range(self.imageShape[1]):
+        #         newImageArray[x,y,0] = int(avgPixs[0])
+        #         newImageArray[x,y,1] = int(avgPixs[1])
+        #         newImageArray[x,y,2] = int(avgPixs[2])
 
 
 def saveNewAverageImage(name, avgPixs, shape):
@@ -59,5 +92,6 @@ def saveNewAverageImage(name, avgPixs, shape):
     outputPath = os.path.abspath(".") + "/" + name
     io.imsave(outputPath, newImageArray)
 
-def saveNewImage(name, sectorCols, shape):
-    pass
+def saveNewImage(name, sectorArray):
+    outputPath = os.path.abspath(".") + "/" + name
+    io.imsave(outputPath, sectorArray)
