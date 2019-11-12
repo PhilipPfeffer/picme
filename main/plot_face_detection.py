@@ -72,13 +72,16 @@ import matplotlib.pyplot as plt
 from matplotlib import patches
 
 # Load the trained file from the module root.
-trained_file = data.lbp_frontal_face_cascade_filename()
+print(skimage.data)
+assert False
+trained_file = skimage.data.lbpcascade_frontalface_opencv()
 
 # Initialize the detector cascade.
 detector = Cascade(trained_file)
 
 path = './'
 name = 'testimage.jpg'
+# name = 'space.jpg'
 image = Image(path, name)
 # img = data.astronaut()
 img = image.getImageArray()

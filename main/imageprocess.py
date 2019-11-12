@@ -1,6 +1,7 @@
 import imageUtil
 from imageUtil import Image
 import numpy as np
+import statistics
 
 imagesCreated = []
 
@@ -33,7 +34,7 @@ def extractSectorsFeature(image, numSectorsX=30, numSectorsY=30, saveImage=False
         colourDistance += image.calculateColourDistance(compactArr, numSectorsX, numSectorsY, n, n+numSectorsX) if n//numSectorsY != numSectorsY-1 else 0
         colourDistance /= 4
         sectorColourDistance[n] = colourDistance
-    return sectorColourDistance
+    return statistics.mean(sectorColourDistance)
 
 if __name__ == "__main__":
     # filePath = ('./', 'testimage.jpg')
