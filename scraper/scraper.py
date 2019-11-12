@@ -8,10 +8,14 @@ import sys
 import csv
 import json
 import pdb
+from html.parser import HTMLParser
+from bs4 import BeautifulSoup
+
 
 ALERT_CLASS_NAME="mt3GC" ## TODO - config file to store all these constants
 POST_OBJECT_CLASS_NAME="_8Rm4L M9sTE  L_LMM SgTZ1   ePUX4"
 USERNAME_CLASS_NAME="FPmhX notranslate nJAzx"
+
 
 class Scraper:
     def __init__(self):
@@ -20,11 +24,36 @@ class Scraper:
 
     def parseFlags(self, argc, argv): # argv is sys.argv, a list of command line arguments
     # returns mode
-        if (argc < 2):
-            raise ValueError("Usage: python3 scraper.py <shortcode-list-file>")
-        else:
-            if (argv[1][len(argv[1])-4:] != ".csv"):
-                raise ValueError("Usage: python3 scraper.py <shortcode-list-file>\nError: file has to be a csv table.")
+        if (argc != 3):
+            print("scraper.py takes 2 arguments\nUsage: python3 scraper.py -f <shortcode-csv-file> | -u <instagram-url>")
+            sys.exit(0)
+        if (argv[1] not in ["-f", "-u"]):
+            print("Incorrect flag\nUsage: python3 scraper.py -f <shortcode-csv-file> | -u <instagram-url>")    
+            sys.exit(0)
+        if (argv[1] == "-f"):
+            if (argv[2][len(argv[2])-4:] != ".csv"):
+                print("Usage: python3 scraper.py <shortcode-list-file>\nError: file has to be a csv table.")
+                sys.exit(0)
+            return True
+        else: # flag is "-u"
+            if ((argv[2][:39] != "https://www.instagram.com/explore/tags/") or (argv[2][-6:] != "?__a=1")):
+                print("Invalid url. Correct url format should be https://www.instagram.com/explore/tags/\{hashtag\}/?__a=1")
+                sys.exit(0)
+            return False
+
+    def extractShortCodesFromJson(self, url):
+        # sample url - https://www.instagram.com/explore/tags/food/?__a=1
+        try:
+            resp = requests.get(url)
+            resp.raise_for_status()
+            jsonData = json.loads(resp.text)
+            posts = jsonData["graphql"]["hashtag"]["edge_hashtag_to_media"]["edges"]
+            for post in posts:
+                self.shortcodes.append(post["node"]["shortcode"])
+            print(self.shortcodes)
+        except Exception as e:
+            print("extractShortCodesFromJson: Error parsing: " + str(e))
+
 
     def extractShortCodesFromCsv(self, filename):
         with open(filename) as f:
@@ -50,10 +79,16 @@ class Scraper:
             commentCount = shortcode_media["edge_media_preview_comment"]["count"]
             isVideo = shortcode_media["is_video"] == "true"
             isAd = shortcode_media["is_ad"] == "true"
-            newPost = Post(caption, username, fullname, shortcode, timestamp, imgUrl, likeCount, commentCount, isVideo, isAd)
+            hashtags = []
+            soup = BeautifulSoup(respText, 'html.parser')
+            hashtag = soup.find("meta", property="instapp:hashtags")
+            if hashtag != None:
+                print(hashtag["content"])
+                hashtags = [hashtag]
+            newPost = Post(caption, username, fullname, shortcode, timestamp, imgUrl, likeCount, commentCount, isVideo, isAd, hashtags)
             return newPost
         except Exception as e:
-            print("Error parsing: " + str(e))
+            print("extractShortCodesFromCsv: Error parsing: " + str(e))
             return None
 
     def writeToCsv(self, filename, posts):
@@ -65,7 +100,7 @@ class Scraper:
 
 
 class Post():
-    def __init__(self, caption, username, fullname, shortcode, timestamp, imgUrl, likeCount, commentCount, isVideo, isAd):
+    def __init__(self, caption, username, fullname, shortcode, timestamp, imgUrl, likeCount, commentCount, isVideo, isAd, hashtags):
         self.__caption = caption
         self.__username = username
         self.__fullname = fullname
@@ -76,15 +111,16 @@ class Post():
         self.__commentCount = commentCount
         self.__isVideo = isVideo
         self.__isAd = isAd
+        self.__hashtags = hashtags
 
     def __str__(self):
-        return (f"""Image object:\n\tcaption: {self.__caption},\n\tusername: {self.__username},\n\tfullname: {self.__fullname},\n\tshortcode: {self.__shortcode},\n\ttimestamp: {self.__timestamp},\n\timgUrl: {self.__imgUrl},\n\tlikeCount: {self.__likeCount},\n\tcommentCount: {self.__commentCount},\n\tisVideo: {self.__isVideo},\n\tisAd: {self.__isAd}""")
+        return (f"""Image object:\n\tcaption: {self.__caption},\n\tusername: {self.__username},\n\tfullname: {self.__fullname},\n\tshortcode: {self.__shortcode},\n\ttimestamp: {self.__timestamp},\n\timgUrl: {self.__imgUrl},\n\tlikeCount: {self.__likeCount},\n\tcommentCount: {self.__commentCount},\n\tisVideo: {self.__isVideo},\n\tisAd: {self.__isAd}\n\thashtags: {self.__hashtags}""")
     
     def getHeaderList():
-        return ["caption", "username", "fullname", "shortcode", "timestamp", "imgUrl", "likeCount", "commentCount", "isVideo", "isAd"]
+        return ["caption", "username", "fullname", "shortcode", "timestamp", "imgUrl", "likeCount", "commentCount", "isVideo", "isAd", "hashtags"]
 
     def toList(self):
-        return [self.__caption, self.__username, self.__fullname, self.__shortcode, self.__timestamp, self.__imgUrl, self.__likeCount, self.__commentCount, self.__isVideo, self.__isAd]
+        return [self.__caption, self.__username, self.__fullname, self.__shortcode, self.__timestamp, self.__imgUrl, self.__likeCount, self.__commentCount, self.__isVideo, self.__isAd, self.__hashtags]
     # getters (public)
     def getCaption(self):
         return self.__caption
@@ -116,10 +152,16 @@ class Post():
     def getIsAd(self):
         return self.__isAd
 
+    def getHashtags(self):
+        return self.__hashtags
+
 if __name__  == "__main__":
     scraper = Scraper()
-    scraper.parseFlags(len(sys.argv), sys.argv)
-    scraper.extractShortCodesFromCsv(sys.argv[1])
+    codesFromFile = scraper.parseFlags(len(sys.argv), sys.argv)
+    if (codesFromFile):
+        scraper.extractShortCodesFromCsv(sys.argv[2])
+    else:
+        scraper.extractShortCodesFromJson(sys.argv[2])
     posts = []
     for shortcode in scraper.shortcodes:
         newPost = scraper.getPostRequestBody(shortcode)
