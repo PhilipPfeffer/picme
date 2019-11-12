@@ -5,9 +5,9 @@ import numpy as np
 from collections import defaultdict 
 
 class Image:
-    def __init__(self, path, name):
-        self.path = path
-        self.name = name
+    def __init__(self, filePath, isURL=False):
+        self.filePath = filePath
+        self.isURL = isURL
         self.imageArray = []
         self.imageShape = (0,0,0)
         self.imageProcess()
@@ -26,7 +26,7 @@ class Image:
     def imageProcess(self):
         """ Takes image location, returns (image ndarray, array shape)
             e.g. array shape = (1080, 1080, 3)."""
-        filename = os.path.join(self.path, self.name)
+        filename = self.filePath if self.isURL else os.path.join(self.filePath[0], self.filePath[1])
         imageArray = io.imread(filename)
         self.imageArray, self.imageShape = (imageArray, imageArray.shape)
         return (self.imageArray, self.imageShape)
