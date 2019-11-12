@@ -1,0 +1,6 @@
+Message: unknown error: unknown sessionId
+  (Session info: chrome=78.0.3904.70)
+  (Driver info: chromedriver=2.36.540469 (1881fd7f8641508feb5166b7cae561d87723cfa8),platform=Mac OS X 10.14.6 x86_64)
+
+post:  https://scontent-lax3-1.cdninstagram.com/vp/767743e4b3435af39c12108acc5d5d03/5E54ED06/t51.2885-15/sh0.08/e35/s640x640/72547412_771212216636129_4015804824088969643_n.jpg?_nc_ht=scontent-lax3-1.cdninstagram.com&_nc_cat=1 tororosso
+post:  https://scontent-lax3-1.cdninstagram.com/vp/767743e4b3435af39c12108acc5d5d03/5E54ED06/t51.2885-15/sh0.08/e35/s640x640/72547412_771212216636129_4015804824088969643_n.jpg?_nc_ht=scontent-lax3-1.cdninstagram.com&_nc_cat=1 tororosso
