@@ -28,7 +28,6 @@ class Image:
             e.g. array shape = (1080, 1080, 3)."""
         filename = self.filePath if self.isURL else os.path.join(self.filePath[0], self.filePath[1])
         imageArray = io.imread(filename)
-        print(imageArray)
         self.imageArray, self.imageShape = (imageArray, imageArray.shape)
         return (self.imageArray, self.imageShape)
     
