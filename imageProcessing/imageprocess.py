@@ -38,4 +38,4 @@ if __name__ == "__main__":
     path = './'
     name = 'testimage.jpg'
     image = Image(path, name)
-    extractSectorsFeature(image, 8, 8)
+    extractSectorsFeature(image, 30, 30)

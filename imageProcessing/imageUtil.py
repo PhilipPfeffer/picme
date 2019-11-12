@@ -17,7 +17,7 @@ class Image:
         return (self.imageArray, self.imageShape)
 
     def getImageArray(self):
-        return self.imageShape
+        return self.imageArray
 
     def getImageShape(self):
         return self.imageShape
