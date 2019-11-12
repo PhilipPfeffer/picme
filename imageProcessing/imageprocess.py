@@ -35,7 +35,7 @@ def extractSectorsFeature(image, numSectorsX=30, numSectorsY=30):
     return sectorColourDistance
 
 if __name__ == "__main__":
-    path = './'
-    name = 'testimage.jpg'
-    image = Image(path, name)
+    # filePath = ('./', 'testimage.jpg')
+    filePath = "https://scontent-lax3-1.cdninstagram.com/vp/01dd9b31a97c8d49d774f2af7f22e6a9/5E56FE87/t51.2885-15/e35/s1080x1080/72668674_673939036467328_7431812160719464417_n.jpg?_nc_ht=scontent-lax3-1.cdninstagram.com&_nc_cat=104"
+    image = Image(filePath, True)
     extractSectorsFeature(image, 30, 30)
