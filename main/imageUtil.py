@@ -2,16 +2,20 @@ import skimage
 import os
 from skimage import io
 import numpy as np
-from collections import defaultdict 
+from collections import defaultdict
+import urllib
+import cv2
 
 class Image:
     def __init__(self, filePath, isURL=False):
         self.filePath = filePath
         self.isURL = isURL
+        self.skimageImage = None
         self.imageArray = []
         self.imageShape = (0,0,0)
         self.imageProcess()
         self.distanceCache = defaultdict(int)
+        if isURL: self.imageOpenCV = self.convertURLtoImage(filePath)
 
     def getImageData(self):
         return (self.imageArray, self.imageShape)
@@ -21,14 +25,17 @@ class Image:
 
     def getImageShape(self):
         return self.imageShape
+    
+    def getOpenCVImage(self):
+        return self.imageOpenCV
 
     # ================== IMPLEMENTATION ================== #
     def imageProcess(self):
         """ Takes image location, returns (image ndarray, array shape)
             e.g. array shape = (1080, 1080, 3)."""
         filename = self.filePath if self.isURL else os.path.join(self.filePath[0], self.filePath[1])
-        imageArray = io.imread(filename)
-        self.imageArray, self.imageShape = (imageArray, imageArray.shape)
+        self.skimageImage = io.imread(filename)
+        self.imageArray, self.imageShape = (self.skimageImage, self.skimageImage.shape)
         return (self.imageArray, self.imageShape)
     
     def getAverageRGB(self):
@@ -86,9 +93,15 @@ class Image:
         distance += abs(int(compactArr[sector1][2]) - compactArr[sector2][2])
         self.distanceCache[(numSectorsX, numSectorsY, sector1, sector2)] = distance
         return distance
+ 
+    def convertURLtoImage(self, URL):
+        """Converts a URL to the image format used by OpenCV, stores it in self.image."""
+        return cv2.cvtColor(self.skimageImage, cv2.COLOR_BGR2RGB)
 
+
+# ================== OTHER FUNCTIONS ================== #
 def saveNewAverageImage(name, avgPixs, shape):
-    """Saves new image with all pixels avaraged, provided the average (r,g,b) pixel values"""
+    """Saves new image with all pixels avaraged, provided the average (r,g,b) pixel values."""
     newImageArray = np.zeros(shape, dtype = np.uint8)
     for x in range(shape[0]):
         for y in range(shape[1]):
