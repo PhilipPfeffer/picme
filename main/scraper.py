@@ -23,7 +23,6 @@ class InstaUtil:
             resp = requests.get(INSTA_BASEURL + username + "/?__a=1")
             resp.raise_for_status()
             jsonData = json.loads(resp.text)
-            print('yaaaaay')
             followerCount = jsonData["graphql"]["user"]["edge_followed_by"]["count"]
             return followerCount
         except Exception as e:
@@ -33,6 +32,7 @@ class InstaUtil:
 class Scraper:
     def __init__(self):
         self.shortcodes =  []
+        self.hashtags = []
         self.instaBaseUrl = "https://www.instagram.com/"
 
     def parseFlags(self, argc, argv): # argv is sys.argv, a list of command line arguments
@@ -60,7 +60,7 @@ class Scraper:
             resp = requests.get(url)
             resp.raise_for_status()
             jsonData = json.loads(resp.text)
-            posts = jsonData["graphql"]["hashtag"]["edge_hashtag_to_media"]["edges"]
+            posts = jsonData["graphql"]["hashtag"]["edge_hashtag_to_top_posts"]["edges"]
             for post in posts:
                 self.shortcodes.append(post["node"]["shortcode"])
             print(self.shortcodes)
@@ -70,6 +70,11 @@ class Scraper:
     def extractShortCodesFromCsv(self, filename):
         with open(filename) as f:
             self.shortcodes = [row["shortcode"] for row in csv.DictReader(f)]
+
+    def extractHashtagsFromCsv(self, filename):
+        with open(filename) as f:
+            self.hashtags = [row["hashtags"] for row in csv.DictReader(f)]
+        return self.hashtags
 
     def getPostRequestBody(self, shortcode):
         try:
@@ -176,17 +181,29 @@ class Post:
 
 if __name__  == "__main__":
     scraper = Scraper()
-    codesFromFile = scraper.parseFlags(len(sys.argv), sys.argv)
-    if (codesFromFile):
-        scraper.extractShortCodesFromCsv(sys.argv[2])
-    else:
-        scraper.extractShortCodesFromJson(sys.argv[2])
+    hashtagsFromCsv = scraper.extractHashtagsFromCsv(sys.argv[1])
+    for hashtag in hashtagsFromCsv:
+        print(f"hashtag: {hashtag}")
+        url = "https://www.instagram.com/explore/tags/"+str(hashtag)+"/?__a=1"
+        scraper.extractShortCodesFromJson(url)
     posts = []
     for shortcode in scraper.shortcodes:
         newPost = scraper.getPostRequestBody(shortcode)
         if newPost != None:
             posts.append(scraper.getPostRequestBody(shortcode))
-    scraper.writeToCsv("datasets/dataset" + str(int(time.time()))+ ".csv", posts)
+    scraper.writeToCsv("datasets/thegreatdataset.csv", posts)
+    # scraper = Scraper()
+    # codesFromFile = scraper.parseFlags(len(sys.argv), sys.argv)
+    # if (codesFromFile):
+    #     scraper.extractShortCodesFromCsv(sys.argv[2])
+    # else:
+    #     scraper.extractShortCodesFromJson(sys.argv[2])
+    # posts = []
+    # for shortcode in scraper.shortcodes:
+    #     newPost = scraper.getPostRequestBody(shortcode)
+    #     if newPost != None:
+    #         posts.append(scraper.getPostRequestBody(shortcode))
+    # scraper.writeToCsv("datasets/dataset" + str(int(time.time()))+ ".csv", posts)
 
     
     #old main function with deprecated selenium driver

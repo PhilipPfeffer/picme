@@ -15,7 +15,7 @@ import imageprocess as imageProcess
 
 def main():
     # trainData, testData = extractFeaturesFromDataset(sys.argv[1])
-    trainData, testData = extractFeaturesFromDataset('datasets/dataset1573732730.csv')
+    trainData, testData = extractFeaturesFromDataset('datasets/thegreatdataset.csv')
     # PhiltrainData, PhiltestData = extractFeaturesFromDataset('datasets/dataset1573717190.csv')
     # print(trainData)
     numIters = 10000
@@ -27,6 +27,7 @@ def main():
 # Feature extraction
 def extractFeaturesFromDataset(filename):
     net = imageProcess.runFaceDetectDNN()
+    print('Start reading features')
     with open(filename) as f:
         listFeatureVectorsWithResult  = []
         for row in csv.DictReader(f):
@@ -51,7 +52,7 @@ def extractFeaturesFromDataset(filename):
                     continue
                 
                 if (key == "caption"):
-                    featureVector["captionLength"] = len(row[key])
+                    # featureVector["captionLength"] = len(row[key])
                     featureVector["capContainsFood"] = 1 if "food" in row[key].lower() else 0
                     featureVector["capContainsFollow"] = 1 if "follow" in row[key].lower() else 0
                     featureVector["capContainsAd"] = 1 if "ad" in row[key].lower() else 0
