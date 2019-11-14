@@ -53,9 +53,8 @@ def runFaceDetectDNN():
     return cv2.dnn.readNetFromCaffe(ptxt, dnnModel)
 
 
-def extractFaceInfo(image, confidenceThreshold=0.5):
+def extractFaceInfo(image, net, confidenceThreshold=0.5):
     """Returns a dict of the {index of the face detected: (area of the image that image takes up, % area that face takes up)}."""
-    net = runFaceDetectDNN()
     openCVImage = image.getOpenCVImage()
     # Below code structure inspired by https://www.pyimagesearch.com/2018/02/26/face-detection-with-opencv-and-deep-learning/
     (imageHeight, imageWidth) = openCVImage.shape[:2]
@@ -77,8 +76,9 @@ if __name__ == "__main__":
     # filePath = "https://scontent-lax3-1.cdninstagram.com/vp/01dd9b31a97c8d49d774f2af7f22e6a9/5E56FE87/t51.2885-15/e35/s1080x1080/72668674_673939036467328_7431812160719464417_n.jpg?_nc_ht=scontent-lax3-1.cdninstagram.com&_nc_cat=104"
     filePath = "https://scontent-sjc3-1.cdninstagram.com/vp/096b4dd04709198a8d5bfe1f65d25254/5E4D3773/t51.2885-15/e35/49394327_933306223546224_3139891258521358385_n.jpg?_nc_ht=scontent-sjc3-1.cdninstagram.com&amp;_nc_cat=100"
     image = Image(filePath, True)
-    # extractSectorsFeature(image, 30, 30)
-    faceInfo = extractFaceInfo(image)
+    extractSectorsFeature(image, 30, 30)
+    net = runFaceDetectDNN()
+    faceInfo = extractFaceInfo(image, net)
     print(faceInfo)
     print(extractNumFaces(faceInfo))
     print(extractTotalPercentAreaFaces(faceInfo))

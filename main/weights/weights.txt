@@ -1,4 +1,13 @@
-likeRatio	0.02323068672941215
-commentRatio	0.0014171093410489596
-commentCount	-0.18
-likeCount	-31.839999999999996
+commentRatio	0.001196414829689956
+between2and6	0.0
+between6and10	0.0
+between10and14	0.0
+between18and22	0.0
+between22and2	0.0
+numFaces	-0.03
+between14and18	-0.030000000000000006
+capContainsFood	-0.04
+capContainsFollow	-0.05
+capContainsAd	-0.05
+percentageFaces	-1.8818446626010215
+captionLength	-2.339999999999997

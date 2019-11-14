@@ -6,14 +6,18 @@ import math
 import sys
 import csv
 import numpy as np
+from datetime import datetime
+import imageprocess as imageProcess
 
 ############################################################
 # Binary classifier
 ############################################################
 
 def main():
-    trainData, testData = extractFeaturesFromDataset(sys.argv[1])
-    print(trainData)
+    # trainData, testData = extractFeaturesFromDataset(sys.argv[1])
+    trainData, testData = extractFeaturesFromDataset('datasets/dataset1573732730.csv')
+    # PhiltrainData, PhiltestData = extractFeaturesFromDataset('datasets/dataset1573717190.csv')
+    # print(trainData)
     numIters = 10000
     stepSz = 0.01
     learnPredictor(trainData, testData, numIters, stepSz)
@@ -22,13 +26,48 @@ def main():
 ############################################################
 # Feature extraction
 def extractFeaturesFromDataset(filename):
+    net = imageProcess.runFaceDetectDNN()
     with open(filename) as f:
         listFeatureVectorsWithResult  = []
         for row in csv.DictReader(f):
             featureVector = defaultdict(float)
             for key in row: #  each row is a dict
                 if (key == "timestamp"): 
+                    hourOfDay = datetime.fromtimestamp(int(row[key])).hour
+                    between2and6 = (hourOfDay >= 2 and hourOfDay < 6)
+                    between6and10 = (hourOfDay >= 6 and hourOfDay < 10)
+                    between10and14 = (hourOfDay >= 10 and hourOfDay < 14)
+                    between14and18 = (hourOfDay >= 14 and hourOfDay < 18)
+                    between18and22 = (hourOfDay >= 18 and hourOfDay < 22)
+                    between22and2 = (hourOfDay >= 22) or (hourOfDay < 2)
+                    featureVector['between2and6'] = between2and6
+                    featureVector['between6and10'] = between6and10
+                    featureVector['between10and14'] = between10and14
+                    featureVector['between14and18'] = between14and18
+                    featureVector['between18and22'] = between18and22
+                    featureVector['between22and2'] = between22and2
+                
+                if (key == "likeRatio" or key == "likeCount" or key == "commentCount" or key == "timestamp"):
                     continue
+                
+                if (key == "caption"):
+                    featureVector["captionLength"] = len(row[key])
+                    featureVector["capContainsFood"] = 1 if "food" in row[key].lower() else 0
+                    featureVector["capContainsFollow"] = 1 if "follow" in row[key].lower() else 0
+                    featureVector["capContainsAd"] = 1 if "ad" in row[key].lower() else 0
+                
+                if key == "imgUrl":
+                    image = imageProcess.Image(row[key], True)
+                    # imageProcess.extractSectorsFeature(image, 30, 30)
+                    # print(image.getImageShape())
+                    faceInfo = imageProcess.extractFaceInfo(image, net)
+                    # print(faceInfo)
+                    # print(row[key])
+                    # numFaces = imageProcess.extractNumFaces(faceInfo)
+                    # percentageFaces = imageProcess.extractTotalPercentAreaFaces(faceInfo)
+                    featureVector["numFaces"] = imageProcess.extractNumFaces(faceInfo)
+                    featureVector["percentageFaces"] = imageProcess.extractTotalPercentAreaFaces(faceInfo)
+
                 # this should fail all the time we have a string as the value feature
                 # probably bad style but  python has no better way to check if 
                 # a string contains a float or not
@@ -37,11 +76,20 @@ def extractFeaturesFromDataset(filename):
                     featureVector[key] = val
                 except:
                     continue
+
             label = 1 if float(row["likeRatio"]) > 0.05 else -1
             listFeatureVectorsWithResult.append((featureVector, label))
         limitLen = int(len(listFeatureVectorsWithResult)/3)
         trainData = listFeatureVectorsWithResult[:limitLen]
         testData = listFeatureVectorsWithResult[limitLen:]
+        plusOneCount = 0
+        minusOneCount = 0
+        for data in trainData:
+            if data[1] == 1: plusOneCount+=1
+            else: minusOneCount+=1
+        print(plusOneCount)
+        print(minusOneCount)
+        print(plusOneCount/(plusOneCount+minusOneCount))
         return (trainData, testData)
 
 
