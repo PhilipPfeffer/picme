@@ -72,17 +72,17 @@ import matplotlib.pyplot as plt
 from matplotlib import patches
 
 # Load the trained file from the module root.
-print(skimage.data)
-assert False
-trained_file = skimage.data.lbpcascade_frontalface_opencv()
+trained_file = skimage.data.lbp_frontal_face_cascade_filename(True)
+print(trained_file)
 
 # Initialize the detector cascade.
 detector = Cascade(trained_file)
 
 path = './'
 name = 'testimage.jpg'
+# name = 'trevor.jpg'
 # name = 'space.jpg'
-image = Image(path, name)
+image = Image((path, name))
 # img = data.astronaut()
 img = image.getImageArray()
 
@@ -93,21 +93,21 @@ detected = detector.detect_multi_scale(img=img,
                                        max_size=(123, 123))
 
 print(detected)
-# plt.imshow(img)
-# img_desc = plt.gca()
-# plt.set_cmap('gray')
+plt.imshow(img)
+img_desc = plt.gca()
+plt.set_cmap('gray')
 
-# for patch in detected:
+for patch in detected:
 
-#     img_desc.add_patch(
-#         patches.Rectangle(
-#             (patch['c'], patch['r']),
-#             patch['width'],
-#             patch['height'],
-#             fill=False,
-#             color='r',
-#             linewidth=2
-#         )
-#     )
+    img_desc.add_patch(
+        patches.Rectangle(
+            (patch['c'], patch['r']),
+            patch['width'],
+            patch['height'],
+            fill=False,
+            color='r',
+            linewidth=2
+        )
+    )
 
-# plt.show()
+plt.show()
