@@ -22,6 +22,7 @@ if __name__ == "__main__":
     # are there any disadvantages? Raul's opinion: I like how cleaner and 
     # decomposed the code looks, but that might incur in inefficient code
 
+    
     postImg = Image(posts[0].getImgUrl(), True)
     extractSectorsFeature(postImg, 30, 30, True)
 
