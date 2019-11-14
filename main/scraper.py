@@ -186,7 +186,7 @@ if __name__  == "__main__":
         newPost = scraper.getPostRequestBody(shortcode)
         if newPost != None:
             posts.append(scraper.getPostRequestBody(shortcode))
-    scraper.writeToCsv("dataset" + str(int(time.time()))+ ".csv", posts)
+    scraper.writeToCsv("datasets/dataset" + str(int(time.time()))+ ".csv", posts)
 
     
     #old main function with deprecated selenium driver
