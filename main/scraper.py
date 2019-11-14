@@ -10,11 +10,24 @@ import json
 import pdb
 from html.parser import HTMLParser
 from bs4 import BeautifulSoup
-
+import time
 
 ALERT_CLASS_NAME="mt3GC" ## TODO - config file to store all these constants
 POST_OBJECT_CLASS_NAME="_8Rm4L M9sTE  L_LMM SgTZ1   ePUX4"
 USERNAME_CLASS_NAME="FPmhX notranslate nJAzx"
+INSTA_BASEURL = "https://www.instagram.com/"
+
+class InstaUtil:
+    def getNumFollowers(username):
+        try:
+            resp = requests.get(INSTA_BASEURL + username + "/?__a=1")
+            resp.raise_for_status()
+            jsonData = json.loads(resp.text)
+            print('yaaaaay')
+            followerCount = jsonData["graphql"]["user"]["edge_followed_by"]["count"]
+            return followerCount
+        except Exception as e:
+            raise ValueError("InstaUtil.getNumFollowers: Error: " + str(e))
 
 
 class Scraper:
@@ -54,7 +67,6 @@ class Scraper:
         except Exception as e:
             print("extractShortCodesFromJson: Error parsing: " + str(e))
 
-
     def extractShortCodesFromCsv(self, filename):
         with open(filename) as f:
             self.shortcodes = [row["shortcode"] for row in csv.DictReader(f)]
@@ -85,10 +97,13 @@ class Scraper:
             if hashtag != None:
                 print(hashtag["content"])
                 hashtags = [hashtag]
-            newPost = Post(caption, username, fullname, shortcode, timestamp, imgUrl, likeCount, commentCount, isVideo, isAd, hashtags)
+            numFollowers = InstaUtil.getNumFollowers(username)
+            likeRatio = likeCount/numFollowers
+            commentRatio = commentCount/numFollowers
+            newPost = Post(caption, username, fullname, shortcode, timestamp, imgUrl, likeCount, likeRatio, commentCount, commentRatio, isVideo, isAd, hashtags)
             return newPost
         except Exception as e:
-            print("extractShortCodesFromCsv: Error parsing: " + str(e))
+            print("getPostRequestBody: Error parsing: " + str(e))
             return None
 
     def writeToCsv(self, filename, posts):
@@ -99,8 +114,8 @@ class Scraper:
                 writer.writerow(post.toList())
 
 
-class Post():
-    def __init__(self, caption, username, fullname, shortcode, timestamp, imgUrl, likeCount, commentCount, isVideo, isAd, hashtags):
+class Post:
+    def __init__(self, caption, username, fullname, shortcode, timestamp, imgUrl, likeCount, likeRatio, commentCount, commentRatio, isVideo, isAd, hashtags):
         self.__caption = caption
         self.__username = username
         self.__fullname = fullname
@@ -108,7 +123,9 @@ class Post():
         self.__timestamp = timestamp
         self.__imgUrl = imgUrl
         self.__likeCount = likeCount
+        self.__likeRatio = likeRatio
         self.__commentCount = commentCount
+        self.__commentRatio = commentRatio
         self.__isVideo = isVideo
         self.__isAd = isAd
         self.__hashtags = hashtags
@@ -117,10 +134,12 @@ class Post():
         return (f"""Image object:\n\tcaption: {self.__caption},\n\tusername: {self.__username},\n\tfullname: {self.__fullname},\n\tshortcode: {self.__shortcode},\n\ttimestamp: {self.__timestamp},\n\timgUrl: {self.__imgUrl},\n\tlikeCount: {self.__likeCount},\n\tcommentCount: {self.__commentCount},\n\tisVideo: {self.__isVideo},\n\tisAd: {self.__isAd}\n\thashtags: {self.__hashtags}""")
     
     def getHeaderList():
-        return ["caption", "username", "fullname", "shortcode", "timestamp", "imgUrl", "likeCount", "commentCount", "isVideo", "isAd", "hashtags"]
+        return ["caption", "username", "fullname", "shortcode", "timestamp", "imgUrl", "likeCount", "likeRatio", "commentCount", "commentRatio", "isVideo", "isAd", "hashtags"]
 
     def toList(self):
-        return [self.__caption, self.__username, self.__fullname, self.__shortcode, self.__timestamp, self.__imgUrl, self.__likeCount, self.__commentCount, self.__isVideo, self.__isAd, self.__hashtags]
+        return [self.__caption, self.__username, self.__fullname, self.__shortcode, self.__timestamp, self.__imgUrl, self.__likeCount, self.__likeRatio, self.__commentCount, self.__commentRatio, self.__isVideo, self.__isAd, self.__hashtags]
+
+
     # getters (public)
     def getCaption(self):
         return self.__caption
@@ -167,7 +186,7 @@ if __name__  == "__main__":
         newPost = scraper.getPostRequestBody(shortcode)
         if newPost != None:
             posts.append(scraper.getPostRequestBody(shortcode))
-    scraper.writeToCsv("dataset.csv", posts)
+    scraper.writeToCsv("dataset" + str(int(time.time()))+ ".csv", posts)
 
     
     #old main function with deprecated selenium driver
