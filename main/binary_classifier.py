@@ -43,16 +43,15 @@ def extractFeaturesFromDataset(filename):
                     between22and2 = (hourOfDay >= 22) or (hourOfDay < 2)
                     featureVector['between2and6'] = between2and6
                     featureVector['between6and10'] = between6and10
-                    featureVector['between10and14'] = between10and14
+                    # featureVector['between10and14'] = between10and14
                     featureVector['between14and18'] = between14and18
                     featureVector['between18and22'] = between18and22
                     featureVector['between22and2'] = between22and2
-                
-                if (key == "likeRatio" or key == "likeCount" or key == "commentCount" or key == "timestamp"):
-                    continue
+            
                 
                 if (key == "caption"):
-                    # featureVector["captionLength"] = len(row[key])
+                    pass
+                    # featureVector["captionLength"] = 1./(len(row[key]))
                     featureVector["capContainsFood"] = 1 if "food" in row[key].lower() else 0
                     featureVector["capContainsFollow"] = 1 if "follow" in row[key].lower() else 0
                     featureVector["capContainsAd"] = 1 if "ad" in row[key].lower() else 0
@@ -62,13 +61,11 @@ def extractFeaturesFromDataset(filename):
                     # imageProcess.extractSectorsFeature(image, 30, 30)
                     # print(image.getImageShape())
                     faceInfo = imageProcess.extractFaceInfo(image, net)
-                    # print(faceInfo)
-                    # print(row[key])
-                    # numFaces = imageProcess.extractNumFaces(faceInfo)
-                    # percentageFaces = imageProcess.extractTotalPercentAreaFaces(faceInfo)
-                    featureVector["numFaces"] = imageProcess.extractNumFaces(faceInfo)
+                    # featureVector["numFaces"] = imageProcess.extractNumFaces(faceInfo)
                     featureVector["percentageFaces"] = imageProcess.extractTotalPercentAreaFaces(faceInfo)
-
+            
+                if (key == "likeRatio" or key == "likeCount" or key == "commentCount" or key == "timestamp"):
+                    continue
                 # this should fail all the time we have a string as the value feature
                 # probably bad style but  python has no better way to check if 
                 # a string contains a float or not
@@ -128,12 +125,12 @@ def learnPredictor(trainExamples, testExamples, numIters, eta):
         def predictor(featureVectorInput): 
             if featureVectorInput == defaultdict(float):
                 return True
-            # feature_vector = extractWordFeatures(input_text)
-            # lambda z : (1 if dotProduct(featureExtractor(z), weights) >= 0 else -1))
+
             return np.sign(dotProduct(weights, featureVectorInput))
         
-        print("evaluatingPredictor with trainExamples: " + str(evaluatePredictor(trainExamples, predictor)))
-        print("evaluatingPredictor with testExamples: " + str(evaluatePredictor(testExamples, predictor)))
+        # print("evaluatingPredictor with trainExamples: " + str(evaluatePredictor(trainExamples, predictor)))
+        # print("evaluatingPredictor with testExamples: " + str(evaluatePredictor(testExamples, predictor)))
+    print("Accuracy: " + str(1-evaluatePredictor(testExamples, predictor)))
     outputWeights(weights, "weights/weights.txt")
     return weights
 
@@ -157,6 +154,7 @@ def evaluatePredictor(examples, predictor):
     '''
     error = 0
     for ex in examples:
+        # print(f"{predictor(ex[0])} {ex[1]}")
         if predictor(ex[0]) != ex[1]:
             error += 1
     return 1.0 * error / len(examples)
