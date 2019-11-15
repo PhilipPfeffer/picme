@@ -98,10 +98,11 @@ class Scraper:
             isAd = shortcode_media["is_ad"] == "true"
             hashtags = []
             soup = BeautifulSoup(respText, 'html.parser')
-            hashtag = soup.find("meta", property="instapp:hashtags")
-            if hashtag != None:
-                print(hashtag["content"])
-                hashtags = [hashtag]
+            hashtags = []
+            hashtagTags = soup.find_all("meta", property="instapp:hashtags")
+            if hashtagTags != None:
+                for h in hashtagTags:
+                    hashtags.append(h["content"])
             numFollowers = InstaUtil.getNumFollowers(username)
             likeRatio = likeCount/numFollowers
             commentRatio = commentCount/numFollowers
@@ -191,7 +192,7 @@ if __name__  == "__main__":
         newPost = scraper.getPostRequestBody(shortcode)
         if newPost != None:
             posts.append(scraper.getPostRequestBody(shortcode))
-    scraper.writeToCsv("datasets/thegreatdataset.csv", posts)
+    scraper.writeToCsv("datasets/theNEWgreatdataset.csv", posts)
     # scraper = Scraper()
     # codesFromFile = scraper.parseFlags(len(sys.argv), sys.argv)
     # if (codesFromFile):
