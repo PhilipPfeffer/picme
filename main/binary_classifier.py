@@ -8,6 +8,7 @@ import csv
 import numpy as np
 from datetime import datetime
 import imageprocess as imageProcess
+import ast
 
 ############################################################
 # Binary classifier
@@ -16,8 +17,6 @@ import imageprocess as imageProcess
 def main():
     # trainData, testData = extractFeaturesFromDataset(sys.argv[1])
     trainDataFeatures, testDataFeatures = extractFeaturesFromDataset('datasets/thegreatdataset.csv')
-    # PhiltrainData, PhiltestData = extractFeaturesFromDataset('datasets/dataset1573717190.csv')
-    # print(trainData)
     numIters = 10000
     stepSz = 0.01
     learnPredictor(trainDataFeatures, testDataFeatures, numIters, stepSz)
@@ -50,16 +49,19 @@ def extractFeaturesFromDataset(filename):
             
                 
                 if (key == "caption"):
-                    pass
-                    # featureVector["captionLength"] = 1./(len(row[key]))
+                    # featureVector["captionLength"] = (len(row[key]))
                     featureVector["capContainsFood"] = 1 if "food" in row[key].lower() else 0
                     featureVector["capContainsFollow"] = 1 if "follow" in row[key].lower() else 0
                     featureVector["capContainsAd"] = 1 if "ad" in row[key].lower() else 0
                 
+                # if key == "hashtags":
+                #     hashtags = ast.literal_eval(row[key])
+                #     hashtags = [n.strip() for n in hashtags]
+                    # featureVector["numHash"] = 1 if len(hashtags) == 0 else 1./len(hashtags)
+
                 if key == "imgUrl":
                     image = imageProcess.Image(row[key], True)
-                    # imageProcess.extractSectorsFeature(image, 30, 30)
-                    # print(image.getImageShape())
+                    # featureVector["colourfulness"] = imageProcess.extractSectorsFeature(image, 20, 20)
                     faceInfo = imageProcess.extractFaceInfo(image, net)
                     # featureVector["numFaces"] = imageProcess.extractNumFaces(faceInfo)
                     featureVector["percentageFaces"] = imageProcess.extractTotalPercentAreaFaces(faceInfo)
