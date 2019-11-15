@@ -63,8 +63,8 @@ class Image:
             sectorR = 0
             sectorG = 0
             sectorB = 0
-            for x in range((n%numSectorsX) * sectorWidth, (n%numSectorsX + 1) * sectorWidth):
-                for y in range((n//numSectorsY) * sectorHeight, (n//numSectorsY + 1) * sectorHeight):
+            for x in range((n%numSectorsX) * sectorWidth, (n%numSectorsX + 1) * sectorWidth, 10):
+                for y in range((n//numSectorsY) * sectorHeight, (n//numSectorsY + 1) * sectorHeight, 10):
                     sectorR += self.imageArray[x][y][0]
                     sectorG += self.imageArray[x][y][1]
                     sectorB += self.imageArray[x][y][2]

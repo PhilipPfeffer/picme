@@ -50,16 +50,14 @@ def extractFeaturesFromDataset(filename):
             
                 
                 if (key == "caption"):
-                    pass
-                    # featureVector["captionLength"] = 1./(len(row[key]))
+                    # featureVector["captionLength"] = (len(row[key]))
                     featureVector["capContainsFood"] = 1 if "food" in row[key].lower() else 0
                     featureVector["capContainsFollow"] = 1 if "follow" in row[key].lower() else 0
                     featureVector["capContainsAd"] = 1 if "ad" in row[key].lower() else 0
                 
                 if key == "imgUrl":
                     image = imageProcess.Image(row[key], True)
-                    # imageProcess.extractSectorsFeature(image, 30, 30)
-                    # print(image.getImageShape())
+                    # featureVector["colourfulness"] = imageProcess.extractSectorsFeature(image, 20, 20)
                     faceInfo = imageProcess.extractFaceInfo(image, net)
                     # featureVector["numFaces"] = imageProcess.extractNumFaces(faceInfo)
                     featureVector["percentageFaces"] = imageProcess.extractTotalPercentAreaFaces(faceInfo)
