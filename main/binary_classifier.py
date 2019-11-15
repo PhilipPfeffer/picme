@@ -88,6 +88,9 @@ def extractFeaturesFromDataset(filename):
         for data in trainData:
             if data[1] == 1: plusOneCount+=1
             else: minusOneCount+=1
+        for data in testData:
+            if data[1] == 1: plusOneCount+=1
+            else: minusOneCount+=1
         print(plusOneCount)
         print(minusOneCount)
         print(plusOneCount/(plusOneCount+minusOneCount))
