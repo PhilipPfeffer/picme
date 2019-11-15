@@ -15,12 +15,12 @@ import imageprocess as imageProcess
 
 def main():
     # trainData, testData = extractFeaturesFromDataset(sys.argv[1])
-    trainData, testData = extractFeaturesFromDataset('datasets/thegreatdataset.csv')
+    trainDataFeatures, testDataFeatures = extractFeaturesFromDataset('datasets/thegreatdataset.csv')
     # PhiltrainData, PhiltestData = extractFeaturesFromDataset('datasets/dataset1573717190.csv')
     # print(trainData)
     numIters = 10000
     stepSz = 0.01
-    learnPredictor(trainData, testData, numIters, stepSz)
+    learnPredictor(trainDataFeatures, testDataFeatures, numIters, stepSz)
 
 
 ############################################################
@@ -80,7 +80,8 @@ def extractFeaturesFromDataset(filename):
 
             label = 1 if float(row["likeRatio"]) > 0.05 else -1
             listFeatureVectorsWithResult.append((featureVector, label))
-        limitLen = int(len(listFeatureVectorsWithResult)/3)
+        print('Finished extracting features')
+        limitLen = 2*int(len(listFeatureVectorsWithResult)/3)
         trainData = listFeatureVectorsWithResult[:limitLen]
         testData = listFeatureVectorsWithResult[limitLen:]
         plusOneCount = 0
@@ -106,7 +107,7 @@ def learnPredictor(trainExamples, testExamples, numIters, eta):
     You should call evaluatePredictor() on both trainExamples and testExamples
     to see how you're doing as you learn after each iteration.
     '''
-    weights = defaultdict(lambda: 3)  # feature => weight
+    weights = {}  # feature => weight
 
     for i in range(numIters):
         for example in trainExamples: # trainExamples is a a list of feature vectors
@@ -114,15 +115,21 @@ def learnPredictor(trainExamples, testExamples, numIters, eta):
             featureVector = example[0]
             # take step
             # print(f"weights {weights}\nfeaturevector: {featureVector}\nresult: {result}")
-            gradient = hingeLossGradient(weights, featureVector, result)
-            # print(f"gradient {gradient}")
-            if gradient  != 0:
-                increment(weights,-eta,gradient)
+            loss_grad = {}
+            if result*dotProduct(weights, featureVector) < 1:
+                increment(loss_grad, -result, featureVector)
+            increment(weights, -eta, loss_grad)
+            
+            # gradient = hingeLossGradient(weights, featureVector, result)
+            # # print(f"gradient {gradient}")
+            # if gradient  != 0:
+            #     increment(weights,-eta,gradient)
 
         def predictor(featureVectorInput): 
             if featureVectorInput == defaultdict(float):
                 return True
             # feature_vector = extractWordFeatures(input_text)
+            # lambda z : (1 if dotProduct(featureExtractor(z), weights) >= 0 else -1))
             return np.sign(dotProduct(weights, featureVectorInput))
         
         print("evaluatingPredictor with trainExamples: " + str(evaluatePredictor(trainExamples, predictor)))
@@ -130,14 +137,14 @@ def learnPredictor(trainExamples, testExamples, numIters, eta):
     outputWeights(weights, "weights/weights.txt")
     return weights
 
-def hingeLossGradient(weights, features, result):
-    if dotProduct(weights, features)*result > 1:
-        return 0
-    else:
-        gradient = features
-        for f in features:
-            gradient[f] *= result*(-1)
-        return  gradient 
+# def hingeLossGradient(weights, features, result):
+#     if dotProduct(weights, features)*result >= 1:
+#         return 0
+#     else:
+#         gradient = features
+#         for f in features:
+#             gradient[f] *= result*(-1)
+#         return  gradient 
 
 ##########################################
 #           MOVE TO UTIL FILE            #
