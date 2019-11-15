@@ -1,6 +1,7 @@
 # Byte-compiled / optimized / DLL files
 main/.DS_Store
-main/weights/weights.txt
+*main/weights/weights.txt
+*weights.txt
 __pycache__/
 *.py[cod]
 *$py.class

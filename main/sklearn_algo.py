@@ -42,15 +42,19 @@ class SKLearnPredictor:
     def runWithoutFeature(self, delIndex):
         # general for both test and train
         label_names = ["instagram worthy", "shit"]
+
         feature_names = list(self.trainData[0][0].keys())
         print(f"deleting feature: {feature_names[delIndex]}")
         del feature_names[delIndex]
 
         # train
         train_labels = [ex[1] for ex in self.trainData]
-        train = [list(ex[0].values()) for ex in self.trainData]
-        for t in train:
-            del t[delIndex]
+        train = []
+        for ex in self.trainData:
+            train.append(list(ex[0].values())
+            for t in train:
+                del t[delIndex]
+                print()
 
         # test
         test_labels =  [ex[1] for ex in self.testData]
