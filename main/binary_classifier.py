@@ -8,6 +8,7 @@ import csv
 import numpy as np
 from datetime import datetime
 import imageprocess as imageProcess
+import ast
 
 ############################################################
 # Binary classifier
@@ -16,8 +17,6 @@ import imageprocess as imageProcess
 def main():
     # trainData, testData = extractFeaturesFromDataset(sys.argv[1])
     trainDataFeatures, testDataFeatures = extractFeaturesFromDataset('datasets/thegreatdataset.csv')
-    # PhiltrainData, PhiltestData = extractFeaturesFromDataset('datasets/dataset1573717190.csv')
-    # print(trainData)
     numIters = 10000
     stepSz = 0.01
     learnPredictor(trainDataFeatures, testDataFeatures, numIters, stepSz)
@@ -55,6 +54,11 @@ def extractFeaturesFromDataset(filename):
                     featureVector["capContainsFollow"] = 1 if "follow" in row[key].lower() else 0
                     featureVector["capContainsAd"] = 1 if "ad" in row[key].lower() else 0
                 
+                # if key == "hashtags":
+                #     hashtags = ast.literal_eval(row[key])
+                #     hashtags = [n.strip() for n in hashtags]
+                    # featureVector["numHash"] = 1 if len(hashtags) == 0 else 1./len(hashtags)
+
                 if key == "imgUrl":
                     image = imageProcess.Image(row[key], True)
                     # featureVector["colourfulness"] = imageProcess.extractSectorsFeature(image, 20, 20)

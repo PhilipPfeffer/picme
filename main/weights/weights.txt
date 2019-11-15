@@ -1,5 +1,4 @@
-commentRatio	10.903406698188912
-colourfulness	0.0
+commentRatio	10.903399618547754
 capContainsAd	-0.009999999999999913
 capContainsFollow	-0.009999999999999997
 capContainsFood	-0.029999999999999916
