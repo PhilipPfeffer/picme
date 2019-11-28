@@ -3,7 +3,7 @@ import imageprocess as imageProcess
 import csv
 from skimage.transform import rescale, resize, downscale_local_mean
 
-RESIZE_FACTOR = 0.25
+TARGET_SIZE = 270
 print('Start reading features')
 with open('datasets/neuralnet-firstdataset.csv') as f:
     allImgs = []
@@ -15,8 +15,12 @@ with open('datasets/neuralnet-firstdataset.csv') as f:
         totalImgs += 1
         try:
             image = imageProcess.Image(row["imgUrl"], True)
-            if image.getImageShape() != (1080, 1080, 3):
+            imageShape = image.getImageShape()
+            squaredImage = imageShape[0] == imageShape[1]
+            isRgb = imageShape[2] == 3;
+            if !squaredImage or !isRgb:    
                 continue
+            
             image_rescaled = rescale(image.skimageImage, RESIZE_FACTOR, anti_aliasing=False, multichannel=True)
             correctShape += 1
         except Exception as e:
