@@ -29,8 +29,10 @@ def extractFeaturesFromDataset(filename):
     print('Start reading features')
     with open(filename) as f:
         listFeatureVectorsWithResult  = []
+        notProcessed = 0
         for row in csv.DictReader(f):
             featureVector = defaultdict(float)
+            imageNotProcessed = False
             for key in row: #  each row is a dict
                 if (key == "timestamp"): 
                     hourOfDay = datetime.fromtimestamp(int(row[key])).hour
@@ -60,7 +62,12 @@ def extractFeaturesFromDataset(filename):
                     # featureVector["numHash"] = 1 if len(hashtags) == 0 else 1./len(hashtags)
 
                 if key == "imgUrl":
-                    image = imageProcess.Image(row[key], True)
+                    try:
+                        image = imageProcess.Image(row[key], True)
+                    except Exception as e:
+                        print(e)
+                        imageNotProcessed = True
+                        break
                     # featureVector["colourfulness"] = imageProcess.extractSectorsFeature(image, 20, 20)
                     faceInfo = imageProcess.extractFaceInfo(image, net)
                     # featureVector["numFaces"] = imageProcess.extractNumFaces(faceInfo)
@@ -76,24 +83,30 @@ def extractFeaturesFromDataset(filename):
                     featureVector[key] = val
                 except:
                     continue
+            if (imageNotProcessed):
+                notProcessed += 1
+                continue
 
-            label = 1 if float(row["likeRatio"]) > 0.05 else -1
+            label = float(row["likeRatio"])
             listFeatureVectorsWithResult.append((featureVector, label))
+
+
         print('Finished extracting features')
         limitLen = 2*int(len(listFeatureVectorsWithResult)/3)
         trainData = listFeatureVectorsWithResult[:limitLen]
         testData = listFeatureVectorsWithResult[limitLen:]
-        plusOneCount = 0
-        minusOneCount = 0
-        for data in trainData:
-            if data[1] == 1: plusOneCount+=1
-            else: minusOneCount+=1
-        for data in testData:
-            if data[1] == 1: plusOneCount+=1
-            else: minusOneCount+=1
-        print(plusOneCount)
-        print(minusOneCount)
-        print(plusOneCount/(plusOneCount+minusOneCount))
+        print(f"Not processed ratio: {notProcessed/len(listFeatureVectorsWithResult)}")
+        # plusOneCount = 0
+        # minusOneCount = 0
+        # for data in trainData:
+        #     if data[1] == 1: plusOneCount+=1
+        #     else: minusOneCount+=1
+        # for data in testData:
+        #     if data[1] == 1: plusOneCount+=1
+        #     else: minusOneCount+=1
+        # print(plusOneCount)
+        # print(minusOneCount)
+        # print(plusOneCount/(plusOneCount+minusOneCount))
         return (trainData, testData)
 
 
@@ -119,12 +132,12 @@ def learnPredictor(trainExamples, testExamples, numIters, eta):
             # print(f"weights {weights}\nfeaturevector: {featureVector}\nresult: {result}")
 
             # hinge loss function
-            loss_grad = {}
-            if result*dotProduct(weights, featureVector) < 1:
-                increment(loss_grad, -result, featureVector)
-            # else:
-            #   increment(loss_grad, -result, featureVector)
-            increment(weights, -eta, loss_grad)
+            # loss_grad = {}
+            # if result*dotProduct(weights, featureVector) < 1:
+            #     increment(loss_grad, -result, featureVector)
+            # # else:
+            # #   increment(loss_grad, -result, featureVector)
+            # increment(weights, -eta, loss_grad)
             
             # squared loss fr least squares regression
             loss_grad = {}
@@ -143,7 +156,7 @@ def learnPredictor(trainExamples, testExamples, numIters, eta):
             if featureVectorInput == defaultdict(float):
                 return True
 
-            return np.sign(dotProduct(weights, featureVectorInput))
+            return dotProduct(weights, featureVectorInput)
         
         # print("evaluatingPredictor with trainExamples: " + str(evaluatePredictor(trainExamples, predictor)))
         # print("evaluatingPredictor with testExamples: " + str(evaluatePredictor(testExamples, predictor)))

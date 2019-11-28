@@ -13,7 +13,9 @@ class Image:
         self.skimageImage = None
         self.imageArray = []
         self.imageShape = (0,0,0)
-        self.imageProcess()
+        processed = self.imageProcess()
+        if (not processed):
+            raise ValueError("Invalid URL for image. Image object could not be created")
         self.distanceCache = defaultdict(int)
         if isURL: self.imageOpenCV = self.convertURLtoImage(filePath)
 
@@ -34,9 +36,13 @@ class Image:
         """ Takes image location, returns (image ndarray, array shape)
             e.g. array shape = (1080, 1080, 3)."""
         filename = self.filePath if self.isURL else os.path.join(self.filePath[0], self.filePath[1])
-        self.skimageImage = io.imread(filename)
-        self.imageArray, self.imageShape = (self.skimageImage, self.skimageImage.shape)
-        return (self.imageArray, self.imageShape)
+        try:
+            self.skimageImage = io.imread(filename)
+            self.imageArray, self.imageShape = (self.skimageImage, self.skimageImage.shape)
+            return True
+        except Exception as e:
+            print(e)
+            return False
     
     def getAverageRGB(self):
         """Returns average (r,g,b) over all image."""
@@ -94,7 +100,7 @@ class Image:
         self.distanceCache[(numSectorsX, numSectorsY, sector1, sector2)] = distance
         return distance
  
-    def convertURLtoImage(self, URL):
+    def convertURLtoImage(self, URL): # TODO why is URL a parameter here?
         """Converts a URL to the image format used by OpenCV, stores it in self.image."""
         return cv2.cvtColor(self.skimageImage, cv2.COLOR_BGR2RGB)
 
