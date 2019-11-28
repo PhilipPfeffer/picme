@@ -62,14 +62,21 @@ for y in y_test:
 y_test = np.array(oneHots)
 
 from keras.models import Sequential
-from keras.layers import Dense, Conv2D, Flatten
+from keras.layers import Dense, Conv2D, Flatten, MaxPooling2D
 
 #create model
 model = Sequential()
 
 #add model layers
-model.add(Conv2D(64, kernel_size=3, activation='relu', input_shape=(int(1080*RESIZE_FACTOR),int(1080*RESIZE_FACTOR),3)))
+model.add(Conv2D(16, kernel_size=3, activation='relu', input_shape=(int(1080*RESIZE_FACTOR),int(1080*RESIZE_FACTOR),3)))
+model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Conv2D(32, kernel_size=3, activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(64, kernel_size=3, activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(128, kernel_size=3, activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(256, kernel_size=3, activation='relu'))
 model.add(Flatten())
 model.add(Dense(10, activation='softmax'))
 
@@ -77,4 +84,4 @@ model.add(Dense(10, activation='softmax'))
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
 #train the model
-model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=3)
+model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=5)
