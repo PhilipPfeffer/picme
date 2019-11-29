@@ -4,8 +4,10 @@ import imageprocess as imageProcess
 import csv
 from skimage.transform import rescale, resize, downscale_local_mean
 from keras.models import Sequential
-from keras.layers import Dense, Conv2D, Flatten
+from keras.layers import Dense, Conv2D, Flatten, MaxPooling2D
 import matplotlib.pyplot as plt
+import math
+from sklearn.metrics import log_loss
 
 TARGET_X = 270
 TARGET_Y = 270
@@ -62,31 +64,53 @@ def trainModel(allImgs, allResults):
 
     #one-hot encode target column
     oneHots = []
+    indices = []
     for y in y_train:
         # 10 buckets
-        index = int(y*10)%10
+        # print(y) 
+        print(f"y: {y} \nlog: {math.log(y)} \nneg log: {-math.log(y)} \n log%10: {-math.log(y)%10}---------")
+        index = int(math.log(y))%10
+        # print(index)
+        indices.append(index)
         oneHot = []
         for i in range(10):
             oneHot.append(0 if i != index else 1)
         oneHots.append(oneHot)
     y_train = np.array(oneHots)
+    print(f"indices: {sorted(indices)}")
+    # plt.figure()
+    # plt.hist(indices,[i for i in range(10)])
+    # plt.show()
 
     oneHots = []
+    test_indices = []
     for y in y_test:
         # 10 buckets
-        index = int(y*10)%10
+        index = int(math.log(y))%10
+        test_indices.append(index)
         oneHot = []
         for i in range(10):
             oneHot.append(0 if i != index else 1)
         oneHots.append(oneHot)
     y_test = np.array(oneHots)
+    print(f"test indices: {sorted(test_indices)}")
+    # plt.figure()
+    # plt.hist(test_indices,[i for i in range(10)])
+    # plt.show()
+
+    # assert False
 
     #create model
     model = Sequential()
 
     #add model layers
-    model.add(Conv2D(64, kernel_size=3, activation='relu', input_shape=(TARGET_X, TARGET_Y,3)))
+    model.add(Conv2D(16, kernel_size=3, activation='relu', input_shape=(TARGET_X, TARGET_Y,3)))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Conv2D(32, kernel_size=3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Conv2D(64, kernel_size=3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Conv2D(128, kernel_size=3, activation='relu'))
     model.add(Flatten())
     model.add(Dense(10, activation='softmax'))
 
@@ -94,7 +118,7 @@ def trainModel(allImgs, allResults):
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
     #train the model
-    model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=3)
+    model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=10)
     return model, x_dev, y_dev
 
 def predict(model, x_dev, y_dev):
@@ -103,16 +127,49 @@ def predict(model, x_dev, y_dev):
     #     plt.figure()
     #     plt.imshow(image)
     # plt.show()
-    # print(y_dev)
+    oneHotsDev = []
+    for y in y_dev:
+        # 10 buckets
+        index = int(math.log(y))%10
+        oneHotDev = []
+        for i in range(10):
+            oneHotDev.append(0 if i != index else 1)
+        oneHotsDev.append(oneHotDev)
+    # print(f"oneHotDev: {oneHotsDev}")
+
+    print(y_dev)
     theoreticalBestImageIndex = np.argmax(y_dev)
     print(f"theoretical best image index: {theoreticalBestImageIndex}")
 
     predictions = model.predict(x_dev)
-    print(predictions)
+    # print([[round(element,2) for element in prediction] for prediction in list(predictions)])
+
+    avg_log_loss = 0
+    for i in range(len(predictions)):
+        prediction = predictions[i]
+        # print(f"prediction: {[round(element,2) for element in prediction]}")
+        actual = oneHotsDev[i]
+        # print(f"actual: {actual}")
+        log_loss_error = 0 if 1.0 in prediction else log_loss(actual, prediction)
+        # print(f"log_loss_error: {log_loss_error}")
+        avg_log_loss += log_loss_error
+    avg_log_loss /= len(predictions)
+    print(f"Test avg_log_loss: {avg_log_loss}")
+    
+    scores = []
+    for prediction in predictions:
+        scores.append(np.dot(prediction, [i for i in range(1,11)]))
+    scores = np.array(scores)
+    dotProdIndex = np.argmax(scores)
+    print(f"scores: {scores}")
+    print(f"dotprodindex: {dotProdIndex}")
+    plt.figure()
+    plt.imshow(x_dev[dotProdIndex])
+    plt.show()
 
     maxBucket = 0
     maxProbsForMaxBucket = 0.0
-    idealImageIndex = 0;
+    idealImageIndex = 0
     for i in range(len(predictions)):
         prediction = predictions[i]
         maxResultIndex = np.argmax(prediction)
@@ -126,10 +183,12 @@ def predict(model, x_dev, y_dev):
                 maxProbsForMaxBucket = maxResult
                 idealImageIndex = i
 
-    plt.figure()
     print(f"idealImageIndex: {idealImageIndex}")
-    plt.imshow(x_dev[idealImageIndex])
-    plt.show()
+    # plt.figure()
+    # plt.imshow(x_dev[idealImageIndex])
+    # plt.figure()
+    # plt.imshow(x_dev[theoreticalBestImageIndex])
+    # plt.show()
 
 
 def splitDataset(allImgs, allResults):
