@@ -1,4 +1,5 @@
 # Byte-compiled / optimized / DLL files
+main/*.npy
 main/.DS_Store
 *main/weights/weights.txt
 *weights.txt
