@@ -65,7 +65,7 @@ class Image:
         numSectors = numSectorsX*numSectorsY
         compactArray = np.zeros((numSectors, 3), dtype = np.uint8)
         for n in range(numSectors):
-            if verbose != 0: print(f"Sector {n+1}/{numSectors}")
+            if verbose != 0: print("Sector "+ str((n+1)/numSectors))
             sectorR = 0
             sectorG = 0
             sectorB = 0

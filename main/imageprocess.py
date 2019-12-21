@@ -25,7 +25,7 @@ def derezzed(image, numSectorsX, numSectorsY, saveImage=False, verbose=0):
 
 def extractSectorsFeature(image, numSectorsX=30, numSectorsY=30, saveImage=False):
     """A list of the colour distance of each sector."""
-    compactArr = derezzed(image, numSectorsX, numSectorsY, saveImage, 1)
+    compactArr = derezzed(image, numSectorsX, numSectorsY, saveImage, 0)
     numSectors = numSectorsX*numSectorsY
     sectorColourDistance = np.zeros(numSectors, dtype = np.int64)
     for n in range(numSectors):
